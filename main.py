@@ -8,7 +8,7 @@ app = FastAPI()
 
 @app.get("/")
 def read_root():
-    return {"Hello": "<b>World</b>"}
+    return {"detail": f"Go To /redoc or /docs"}
 
 
 @app.get("/random/{subreddit}")
@@ -55,12 +55,12 @@ def custom_openapi():
     openapi_schema = get_openapi(
         title="Memes API by Adarsh",
         version=os.system('git describe --abbrev=7 --always  --long --match'),
-        description="A simple api to steal memes from Reddit.",
+        description=f"A simple API made with Python and FastAPI to steal memes from Reddit. Available subreddits are {', '.join(subreddits)}. 'any' means randomly selected subreddit.",
         routes=app.routes
     )
-    # openapi_schema["info"]["x-logo"] = {
-    #     "url": "<img_path>"
-    # }
+    openapi_schema["info"]["x-logo"] = {
+        "url": "https://i.ibb.co/JBCdS67/Our-climate-is-changing-Why-aren-t-we-MEMES-API.png"
+    }
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
