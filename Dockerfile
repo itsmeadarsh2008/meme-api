@@ -1,20 +1,9 @@
-# Use the official Python image as the base image
-FROM python:3.9-slim-buster
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
 
-# Set the working directory in the container
-WORKDIR /app
+COPY requirements.txt /app/requirements.txt
 
-# Copy the requirements file into the container
-COPY requirements.txt .
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
-# Install the dependencies
-RUN pip install -r requirements.txt
+COPY main.py /app/
 
-# Copy the rest of the application code into the container
-COPY . .
-
-# Expose the port that the application will run on
-EXPOSE 8000
-
-# Start the application with uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
