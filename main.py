@@ -1,61 +1,62 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.openapi.utils import get_openapi
+from fastapi.responses import JSONResponse
 from sources import get_random_post, get_recent_post, subreddits
 import random
+import json
 
 app = FastAPI()
 
 @app.get("/")
 def read_root():
-    return {"detail": f"Go To /redoc or /docs"}
-
+    return {"detail": f"Go to /redoc or /docs"}
 
 @app.get("/random/{subreddit}")
-def read_random(subreddit: str):
+def read_random(subreddit: str = "any", count: int = 1):
     try:
-        choice = random.choice(subreddits)
-        post = get_random_post(choice)
         if subreddit == "any":
-            choice = random.choice(subreddits)
-            post = get_random_post(choice)
-            return {"media": post[1], "caption": post[0], "subreddit": choice}
+            subreddits_list = subreddits
         else:
-            post = get_random_post(subreddit)
-            return {"media": post[1], "caption": post[0], "subreddit": subreddit}
-    except ValueError as e:
-        return {
-            "media": None,
-            "caption": f"Not Found: Value Error Raised (Available Subreddits: {subreddits})",
-            "subreddit": None,
-        }
-
+            subreddits_list = subreddit.split(",")
+        memes = []
+        for _ in range(count):
+            choice = random.choice(subreddits_list)
+            post = get_random_post(choice)
+            memes.append({"media": post[1], "caption": post[0], "subreddit": choice})
+        response_data = memes
+    except ValueError:
+        response_data = {"detail": f"Not Found: Available Subreddits: {', '.join(subreddits)}"}
+    response_body = json.dumps(response_data)
+    media_type = "application/json"
+    return Response(content=response_body, media_type=media_type)
 
 @app.get("/recent/{subreddit}")
-def read_recent(subreddit: str):
+def read_recent(subreddit: str = "any", count: int = 1):
     try:
         if subreddit == "any":
-            choice = random.choice(subreddits)
-            post = get_recent_post(choice)
-            return {"media": post[1], "caption": post[0], "subreddit": choice}
+            subreddits_list = subreddits
         else:
-            post = get_recent_post(subreddit)
-            return {"media": post[1], "caption": post[0], "subreddit": subreddit}
-    except ValueError as e:
-        return {
-            "media": None,
-            "caption": f"Not Found: Value Error Raised (Available Subreddits: {subreddits})",
-            "subreddit": None,
-        }
+            subreddits_list = subreddit.split(",")
+        memes = []
+        for _ in range(count):
+            choice = random.choice(subreddits_list)
+            post = get_recent_post(choice)
+            memes.append({"media": post[1], "caption": post[0], "subreddit": choice})
+        response_data = memes
+    except ValueError:
+        response_data = {"detail": f"Not Found: Available Subreddits: {', '.join(subreddits)}"}
+    response_body = json.dumps(response_data)
+    media_type = "application/json"
+    return Response(content=response_body, media_type=media_type)
 
-#END
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = get_openapi(
         title="Memes API by Adarsh",
-        version=os.system('git describe --abbrev=7 --always  --long --match'),
-        description=f"A simple API made with Python and FastAPI to steal memes from Reddit. Available subreddits are {', '.join(subreddits)}. 'any' means randomly selected subreddit.",
+        version=os.popen('git describe --abbrev=7 --always --match "*"').read().strip(),
+        description=f"A simple API made with Python and FastAPI to fetch memes from Reddit. Available subreddits are {', '.join(subreddits)}. 'any' means randomly selected subreddit.",
         routes=app.routes
     )
     openapi_schema["info"]["x-logo"] = {
@@ -63,6 +64,5 @@ def custom_openapi():
     }
     app.openapi_schema = openapi_schema
     return app.openapi_schema
-
 
 app.openapi = custom_openapi
