@@ -24,7 +24,7 @@ A simple API made with Python and FastAPI to fetch memes from Reddit.
 
 ### Query Parameters
 
-- `subreddit` (optional): Name of the subreddit to fetch the meme from. Use `any` to fetch from any random subreddit. Multiple subreddits can be provided by separating them with commas (`,`).
+- `subreddit` (Require): Name of the subreddit to fetch the meme from. Use `any` to fetch from any random subreddit. Multiple subreddits can be provided by separating them with commas (`,`).
 - `count` (optional): Number of memes to fetch. Default is `1`.
 
 ### Example Requests
